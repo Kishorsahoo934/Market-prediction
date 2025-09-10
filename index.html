@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Skin Cancer Classifier</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right, #6a11cb, #2575fc);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      background: #ffffff;
+      padding: 40px 30px;
+      border-radius: 20px;
+      width: 400px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      text-align: center;
+      transition: transform 0.3s;
+    }
+
+    .container:hover {
+      transform: scale(1.02);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 25px;
+      font-size: 28px;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    label {
+      display: inline-block;
+      padding: 12px 25px;
+      background: #2575fc;
+      color: #fff;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    label:hover {
+      background: #6a11cb;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(to right, #6a11cb, #2575fc);
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 50px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 15px;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .preview {
+      margin-top: 20px;
+    }
+
+    .preview img {
+      max-width: 100%;
+      border-radius: 15px;
+      border: 2px solid #2575fc;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .result {
+      margin-top: 25px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #27ae60;
+    }
+
+    .error {
+      margin-top: 25px;
+      font-size: 16px;
+      color: #e74c3c;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Skin Cancer Classifier</h1>
+    <label for="fileInput">Choose an Image</label>
+    <input type="file" id="fileInput" accept="image/*">
+    <div class="preview" id="preview"></div>
+    <button onclick="predict()">Predict</button>
+    <div class="result" id="result"></div>
+    <div class="error" id="error"></div>
+  </div>
+
+  <script>
+    let selectedFile = null;
+
+    document.getElementById("fileInput").addEventListener("change", function(event) {
+      selectedFile = event.target.files[0];
+      if (selectedFile) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById("preview").innerHTML = 
+            `<img src="${e.target.result}" alt="Preview">`;
+        };
+        reader.readAsDataURL(selectedFile);
+      }
+    });
+
+    async function predict() {
+      document.getElementById("result").innerText = "";
+      document.getElementById("error").innerText = "";
+
+      if (!selectedFile) {
+        document.getElementById("error").innerText = "Please choose an image first.";
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      try {
+        const response = await fetch("http://127.0.0.1:5000/predict", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error("API request failed");
+        }
+
+        const data = await response.json();
+        document.getElementById("result").innerText = 
+          `Prediction: ${data.class} (${data.confidence})`;
+
+      } catch (err) {
+        document.getElementById("error").innerText = "❌ Failed to connect to API";
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>
