@@ -25,5 +25,5 @@ def predict(budget: int):
     df = pd.DataFrame([[budget]], columns=['Marketing Budget (X) in Thousands'])
 
     prediction = model.predict(df)
-    return {"prediction": int(prediction[1])}
+    return {"prediction": int(prediction[0])}
 
